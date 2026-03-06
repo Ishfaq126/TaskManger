@@ -1,0 +1,36 @@
+name: Build Android App
+
+on:
+  workflow_dispatch: # Allows you to run it manually by clicking a button
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: Install Dependencies
+        working-directory: Frontend/App/taskforge
+        run: flutter pub get
+        
+      - name: Build APK
+        working-directory: Frontend/App/taskforge
+        run: flutter build apk --release
+        
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: taskforge-android-app
+          path: Frontend/App/taskforge/build/app/outputs/flutter-apk/app-release.apk
