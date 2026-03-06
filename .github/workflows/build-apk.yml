@@ -15,29 +15,32 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
+          cache: 'gradle'
           
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          # Using 'any' stable to ensure we get the latest compatible version
           channel: 'stable'
 
-      - name: Automated Fixes (URL + SDK + Dependencies)
+      - name: Automated Fixes (URL + SDK + Gradle)
         working-directory: Frontend/App/taskforge
         run: |
-          # 1. Fix the Dart SDK requirement (Downgrade 3.8.1 to 3.5.0 to match GitHub Runners)
+          # 1. Fix the Dart SDK requirement
           sed -i 's/sdk: ">=3.8.1/sdk: ">=3.5.0/g' pubspec.yaml
 
           # 2. Inject your Live Backend URL
           sed -i 's|http://10.72.125.97:4000/api|https://tasks.digibizz.cloud/api|g' lib/utils/constants.dart
           sed -i 's|http://10.72.125.97:4000/graphql|https://tasks.digibizz.cloud/graphql|g' lib/utils/constants.dart
 
-          # 3. Force-fix the Hive vs Bloc conflict using dependency_overrides
-          # This appends a block to the end of your pubspec.yaml to stop the version solver error
+          # 3. Force-fix Hive vs Bloc conflict
           echo "" >> pubspec.yaml
           echo "dependency_overrides:" >> pubspec.yaml
           echo "  analyzer: ^6.4.1" >> pubspec.yaml
           echo "  test_api: 0.7.10" >> pubspec.yaml
+
+          # 4. FIX THE GRADLE ERROR: Remove the hardcoded local Java path
+          # This looks into your android folder and deletes the line mentioning C:/Program Files
+          sed -i '/org.gradle.java.home/d' android/gradle.properties
 
       - name: Install Dependencies
         working-directory: Frontend/App/taskforge
