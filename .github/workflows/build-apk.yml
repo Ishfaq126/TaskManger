@@ -22,7 +22,7 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Automated Fixes (URL + SDK + Gradle)
+      - name: Automated Fixes (URL + Gradle + Versioning)
         working-directory: Frontend/App/taskforge
         run: |
           # 1. Fix the Dart SDK requirement
@@ -38,9 +38,14 @@ jobs:
           echo "  analyzer: ^6.4.1" >> pubspec.yaml
           echo "  test_api: 0.7.10" >> pubspec.yaml
 
-          # 4. FIX THE GRADLE ERROR: Remove the hardcoded local Java path
-          # This looks into your android folder and deletes the line mentioning C:/Program Files
+          # 4. FIX THE JAVA HOME ERROR
           sed -i '/org.gradle.java.home/d' android/gradle.properties
+
+          # 5. FIX THE AGP VERSION ERROR (New!)
+          # This replaces the old version 8.7.3 with 8.9.1 in your build.gradle
+          sed -i 's/com.android.application" version "8.7.3"/com.android.application" version "8.9.1"/g' android/build.gradle
+          sed -i 's/com.android.library" version "8.7.3"/com.android.library" version "8.9.1"/g' android/build.gradle
+          sed -i 's/org.jetbrains.kotlin.android" version "1.9.10"/org.jetbrains.kotlin.android" version "2.0.0"/g' android/build.gradle
 
       - name: Install Dependencies
         working-directory: Frontend/App/taskforge
